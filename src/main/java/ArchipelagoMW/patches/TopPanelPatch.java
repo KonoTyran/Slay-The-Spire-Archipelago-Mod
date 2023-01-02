@@ -22,6 +22,7 @@ import com.megacrit.cardcrawl.helpers.Hitbox;
 import com.megacrit.cardcrawl.helpers.MathHelper;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.rewards.RewardItem;
+import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import com.megacrit.cardcrawl.screens.CombatRewardScreen;
 import com.megacrit.cardcrawl.ui.panels.TopPanel;
 import org.apache.logging.log4j.LogManager;
@@ -87,6 +88,7 @@ public class TopPanelPatch {
         } else {
             sb.setColor(Color.RED);
         }
+
         sb.draw(ArchipelagoMW.AP_ICON, AP_BUTTON_X - 32.0F + 32.0F * Settings.scale, ICON_Y - 32.0F + 32.0F * Settings.scale, 32.0F, 32.0F, 64.0F, 64.0F, Settings.scale, Settings.scale, apIconAngle, 0, 0, 64, 64, false, false);// 1803
         if (apButtonHB.hovered) {// 1820
             sb.setBlendFunction(770, 1);// 1821
@@ -96,8 +98,12 @@ public class TopPanelPatch {
         } else {
             sb.setColor(Color.WHITE);
         }
+        if(AbstractDungeon.getCurrRoom().phase != AbstractRoom.RoomPhase.COMPLETE || (AbstractDungeon.getCurrMapNode().y == -1 && AbstractDungeon.actNum != 1)){
+            sb.setColor(Color.DARK_GRAY);
+            sb.draw(ArchipelagoMW.AP_ICON, AP_BUTTON_X - 32.0F + 32.0F * Settings.scale, ICON_Y - 32.0F + 32.0F * Settings.scale, 32.0F, 32.0F, 64.0F, 64.0F, Settings.scale, Settings.scale, apIconAngle, 0, 0, 64, 64, false, false);
+        }
         Color tmpColor = Color.WHITE.cpy();
-        FontHelper.renderFontRightTopAligned(sb, FontHelper.topPanelAmountFont, Integer.toString(ArchipelagoRewardScreen.rewards.size()), AP_BUTTON_X + 58.0F * Settings.scale, ICON_Y + 25.0F * Settings.scale, tmpColor);
+        FontHelper.renderFontRightTopAligned(sb, FontHelper.topPanelAmountFont, Integer.toString(ArchipelagoRewardScreen.rewardsQueued), AP_BUTTON_X + 58.0F * Settings.scale, ICON_Y + 25.0F * Settings.scale, tmpColor);
 
         apButtonHB.render(sb);
     }
@@ -118,14 +124,22 @@ public class TopPanelPatch {
         if(clickedAPButton) {
             // if we are disconnected and we click the ap button try new connection.
             if(!APClient.apClient.isConnected()) {
-                APClient.newConnection(ArchipelagoMW.address,ArchipelagoMW.slotName, ConnectionPanel.passwordField);
+                APClient.newConnection(ArchipelagoMW.address, ArchipelagoMW.slotName, ConnectionPanel.passwordField);
             }
+            //ArchipelagoMW.logger.info("room phase: " + AbstractDungeon.getCurrRoom().phase.toString());
 
             if(AbstractDungeon.screen == ArchipelagoRewardScreen.Enum.ARCHIPELAGO_REWARD) {
                 ArchipelagoRewardScreen.close();
-            } else {
-                ArchipelagoRewardScreen.open();
+            }
+            else{
+                if(AbstractDungeon.getCurrRoom().phase == AbstractRoom.RoomPhase.COMPLETE) {
+                    if(AbstractDungeon.getCurrMapNode().y == -1 && AbstractDungeon.actNum != 1) {
+                        return;
+                    }
+                    ArchipelagoRewardScreen.open();
+                }
             }
         }
     }
 }
+
