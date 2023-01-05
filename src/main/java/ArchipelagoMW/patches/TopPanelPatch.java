@@ -98,7 +98,7 @@ public class TopPanelPatch {
         } else {
             sb.setColor(Color.WHITE);
         }
-        if(AbstractDungeon.getCurrRoom().phase != AbstractRoom.RoomPhase.COMPLETE || (AbstractDungeon.getCurrMapNode().y == -1 && AbstractDungeon.actNum != 1)){
+        if(AbstractDungeon.getCurrRoom().phase != AbstractRoom.RoomPhase.COMPLETE){ //|| (AbstractDungeon.getCurrMapNode().y == -1 && AbstractDungeon.actNum != 1)){
             sb.setColor(Color.DARK_GRAY);
             sb.draw(ArchipelagoMW.AP_ICON, AP_BUTTON_X - 32.0F + 32.0F * Settings.scale, ICON_Y - 32.0F + 32.0F * Settings.scale, 32.0F, 32.0F, 64.0F, 64.0F, Settings.scale, Settings.scale, apIconAngle, 0, 0, 64, 64, false, false);
         }
@@ -133,9 +133,9 @@ public class TopPanelPatch {
             }
             else{
                 if(AbstractDungeon.getCurrRoom().phase == AbstractRoom.RoomPhase.COMPLETE) {
-                    if(AbstractDungeon.getCurrMapNode().y == -1 && AbstractDungeon.actNum != 1) {
+                  /*  if(AbstractDungeon.getCurrMapNode().y == -1 && AbstractDungeon.actNum != 1) {
                         return;
-                    }
+                    }*/
                     ArchipelagoRewardScreen.open();
                 }
             }

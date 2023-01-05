@@ -207,6 +207,9 @@ public class ArchipelagoRewardScreen {
         }
         logger.info("returning to room " + AbstractDungeon.previousScreen);
         AbstractDungeon.closeCurrentScreen();
+        if(AbstractDungeon.getCurrMapNode().y == -1) {
+            //AbstractDungeon.initializeFirstRoom();
+        }
         //AbstractDungeon.dynamicBanner.hide();
     }
 

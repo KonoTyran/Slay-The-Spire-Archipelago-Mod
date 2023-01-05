@@ -7,6 +7,8 @@ import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.SeedHelper;
+import com.megacrit.cardcrawl.neow.NeowEvent;
+import com.megacrit.cardcrawl.neow.NeowRoom;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import com.megacrit.cardcrawl.screens.mainMenu.MainMenuScreen;
 import gg.archipelago.APClient.Print.APPrint;
@@ -20,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class APClient extends gg.archipelago.APClient.APClient {
 
@@ -136,7 +139,11 @@ public class APClient extends gg.archipelago.APClient.APClient {
             ArchipelagoRewardScreen.index = 0;
 
             LocationTracker.scoutFirstLocations();
-
+            Set<Long> checkedLocations = getLocationManager().getCheckedLocations();
+            for (Long checkedLocation : checkedLocations) {
+                logger.info("checkedLocation found: " + checkedLocation);
+            }
+            //NeowEvent.
         }
         catch (Exception e) {
             e.printStackTrace();
