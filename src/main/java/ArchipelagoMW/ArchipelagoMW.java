@@ -34,7 +34,7 @@ public class ArchipelagoMW implements
 
     //This is for the in-game mod settings panel.
     private static final String MODNAME = "Archipelago Multi-World";
-    private static final String AUTHOR = "Kono Tyran"; // And pretty soon - You!
+    private static final String AUTHOR = "Kono Tyran & Mavelovent"; // And pretty soon - You!
     private static final String DESCRIPTION = "An Archipelago multiworld mod.";
 
     //Mod Badge - A small icon that appears in the mod settings menu next to your mod.

@@ -83,10 +83,17 @@ public class TopPanelPatch {
 
 
     private static void renderAPIcon(SpriteBatch sb) {
+        boolean isUsable = true;
+        if(AbstractDungeon.getCurrRoom().phase != AbstractRoom.RoomPhase.COMPLETE || (AbstractDungeon.getCurrMapNode().y == -1 && AbstractDungeon.actNum != 1)){
+            isUsable = false;
+        }
         if(APClient.apClient.isConnected()) {
             sb.setColor(Color.WHITE);
         } else {
             sb.setColor(Color.RED);
+        }
+        if(!isUsable){
+            sb.setColor(Color.DARK_GRAY);
         }
 
         sb.draw(ArchipelagoMW.AP_ICON, AP_BUTTON_X - 32.0F + 32.0F * Settings.scale, ICON_Y - 32.0F + 32.0F * Settings.scale, 32.0F, 32.0F, 64.0F, 64.0F, Settings.scale, Settings.scale, apIconAngle, 0, 0, 64, 64, false, false);// 1803
@@ -95,13 +102,8 @@ public class TopPanelPatch {
             sb.setColor(new Color(1.0F, 1.0F, 1.0F, 0.25F));
             sb.draw(ArchipelagoMW.AP_ICON, AP_BUTTON_X - 32.0F + 32.0F * Settings.scale, ICON_Y - 32.0F + 32.0F * Settings.scale, 32.0F, 32.0F, 64.0F, 64.0F, Settings.scale, Settings.scale, apIconAngle, 0, 0, 64, 64, false, false);
             sb.setBlendFunction(770, 771);
-        } else {
-            sb.setColor(Color.WHITE);
         }
-        if(AbstractDungeon.getCurrRoom().phase != AbstractRoom.RoomPhase.COMPLETE || (AbstractDungeon.getCurrMapNode().y == -1 && AbstractDungeon.actNum != 1)){
-            sb.setColor(Color.DARK_GRAY);
-            sb.draw(ArchipelagoMW.AP_ICON, AP_BUTTON_X - 32.0F + 32.0F * Settings.scale, ICON_Y - 32.0F + 32.0F * Settings.scale, 32.0F, 32.0F, 64.0F, 64.0F, Settings.scale, Settings.scale, apIconAngle, 0, 0, 64, 64, false, false);
-        }
+
         Color tmpColor = Color.WHITE.cpy();
         FontHelper.renderFontRightTopAligned(sb, FontHelper.topPanelAmountFont, Integer.toString(ArchipelagoRewardScreen.rewardsQueued), AP_BUTTON_X + 58.0F * Settings.scale, ICON_Y + 25.0F * Settings.scale, tmpColor);
 
