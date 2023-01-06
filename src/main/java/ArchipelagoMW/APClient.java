@@ -1,5 +1,6 @@
 package ArchipelagoMW;
 
+import ArchipelagoMW.patches.NeowPatch;
 import ArchipelagoMW.ui.RewardMenu.ArchipelagoRewardScreen;
 import ArchipelagoMW.ui.connection.ConnectionPanel;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -139,11 +140,20 @@ public class APClient extends gg.archipelago.APClient.APClient {
             ArchipelagoRewardScreen.index = 0;
 
             LocationTracker.scoutFirstLocations();
+
             Set<Long> checkedLocations = getLocationManager().getCheckedLocations();
+            NeowPatch.act2portalAvailable = false;
+            NeowPatch.act3portalAvailable = false;
+            if(checkedLocations.contains(22001L)){
+                NeowPatch.act2portalAvailable = true;
+            }
+            if(checkedLocations.contains(22002L)){
+                NeowPatch.act3portalAvailable = true;
+            }
+
             for (Long checkedLocation : checkedLocations) {
                 logger.info("checkedLocation found: " + checkedLocation);
             }
-            //NeowEvent.
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -186,7 +196,7 @@ public class APClient extends gg.archipelago.APClient.APClient {
         //ignore received items that happen while we are not yet loaded
         logger.info("NetworkItem received: " + networkItem.itemName);
         ArchipelagoRewardScreen.rewardsQueued +=1 ;
-        if (AbstractDungeon.isPlayerInDungeon()) {
+        if (CardCrawlGame.isInARun()) {
             AbstractRoom room;
             try {
                 room =  AbstractDungeon.getCurrRoom();
@@ -196,7 +206,9 @@ public class APClient extends gg.archipelago.APClient.APClient {
             catch (NullPointerException e) {
                 logger.info("Player is not in the dungeon yet? GetCurrRoom Failed. Most likely on second and further runs");
             }
-
+        }
+        else{
+            logger.info("Player is not playing right now!");
         }
     }
 

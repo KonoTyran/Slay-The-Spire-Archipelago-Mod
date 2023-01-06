@@ -19,6 +19,8 @@ import java.util.ArrayList;
 public class NeowPatch {
 
     public static final Logger logger = LogManager.getLogger(NeowPatch.class.getName());
+    public static boolean act2portalAvailable = false;
+    public static boolean act3portalAvailable = false;
 
     public NeowPatch() {}
 
@@ -48,7 +50,7 @@ public class NeowPatch {
                 if(portalEngaged){
                     CustomFields.finished.set(__instance, true);
                     __instance.roomEventText.clear();
-                    CardCrawlGame.music.silenceBGM();
+                    CardCrawlGame.music.fadeOutBGM();
                     DevConsole.execute();
                     return SpireReturn.Return();
                 }
@@ -64,8 +66,8 @@ public class NeowPatch {
             }
             if(___screenNum == 99) {
                 __instance.roomEventText.clear();
-                __instance.roomEventText.addDialogOption("Portal to act 3",false);
-                __instance.roomEventText.addDialogOption("Portal to act 2",true);
+                __instance.roomEventText.addDialogOption("Portal to act 3",!act3portalAvailable);
+                __instance.roomEventText.addDialogOption("Portal to act 2",!act2portalAvailable);
                 __instance.roomEventText.addDialogOption("[Leave]");
             }
         }

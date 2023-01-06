@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireEnum;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
+import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.helpers.input.ScrollInputProcessor;
@@ -55,6 +56,8 @@ public class ConnectionInfoScreen {
         //show confirm button
         confirmButton.show();
         confirmButton.isDisabled = false;
+
+        logger.info("player is playing: " + AbstractDungeon.isPlayerInDungeon());
     }
 
     public void backToMenu() {

@@ -2,12 +2,15 @@ package ArchipelagoMW;
 
 import com.megacrit.cardcrawl.rewards.RewardItem;
 import gg.archipelago.APClient.parts.NetworkItem;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class LocationTracker {
+    public static final Logger logger = LogManager.getLogger(LocationTracker.class.getName());
 
     private static ArrayList<Long> cardDrawLocations;
 
@@ -15,7 +18,9 @@ public class LocationTracker {
 
     private static ArrayList<Long> rareCardLocations;
 
-    private static ArrayList<Long> bossRelicLocations;
+    private static ArrayList<Long> bossRelicLocationsAct1;
+    private static ArrayList<Long> bossRelicLocationsAct2;
+    private static ArrayList<Long> bossRelicLocationsAct3;
 
     public static boolean cardDraw;
 
@@ -59,9 +64,13 @@ public class LocationTracker {
             add(21003L);
         }};
 
-        bossRelicLocations = new ArrayList<Long>() {{
+        bossRelicLocationsAct1 = new ArrayList<Long>() {{
             add(22001L);
+        }};
+        bossRelicLocationsAct2 = new ArrayList<Long>() {{
             add(22002L);
+        }};
+        bossRelicLocationsAct3 = new ArrayList<Long>() {{
             add(22003L);
         }};
     }
@@ -121,7 +130,21 @@ public class LocationTracker {
     /**
      * sends the next boss relic location to AP
      */
-    static public String sendBossRelic() {
+    static public String sendBossRelic(int act) {
+        ArrayList<Long> bossRelicLocations;
+        logger.info("going to send boss relic from act " + act);
+        switch (act){
+            case 1:
+                bossRelicLocations = bossRelicLocationsAct1;
+                break;
+            case 2:
+                bossRelicLocations = bossRelicLocationsAct2;
+                break;
+            case 3:
+            default:
+                bossRelicLocations = bossRelicLocationsAct3;
+                break;
+        }
         if(bossRelicLocations.isEmpty())
             return "";
         long locationID = bossRelicLocations.remove(0);
@@ -145,7 +168,13 @@ public class LocationTracker {
         for (long location : relicLocations) {
             ap.checkLocation(location);
         }
-        for (long location : bossRelicLocations) {
+        for (long location : bossRelicLocationsAct1) {
+            ap.checkLocation(location);
+        }
+        for (long location : bossRelicLocationsAct2) {
+            ap.checkLocation(location);
+        }
+        for (long location : bossRelicLocationsAct3) {
             ap.checkLocation(location);
         }
     }
@@ -155,7 +184,9 @@ public class LocationTracker {
             add(cardDrawLocations.get(0));
             add(relicLocations.get(0));
             add(rareCardLocations.get(0));
-            add(bossRelicLocations.get(0));
+            add(bossRelicLocationsAct1.get(0));
+            add(bossRelicLocationsAct2.get(0));
+            add(bossRelicLocationsAct3.get(0));
         }};
         APClient.apClient.scoutLocations(locations);
     }
