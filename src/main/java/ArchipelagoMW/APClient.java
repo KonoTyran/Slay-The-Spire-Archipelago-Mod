@@ -8,10 +8,12 @@ import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.SeedHelper;
+import com.megacrit.cardcrawl.random.Random;
 import com.megacrit.cardcrawl.neow.NeowEvent;
 import com.megacrit.cardcrawl.neow.NeowRoom;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import com.megacrit.cardcrawl.screens.mainMenu.MainMenuScreen;
+import gg.archipelago.APClient.ItemFlags;
 import gg.archipelago.APClient.Print.APPrint;
 import gg.archipelago.APClient.events.ConnectionAttemptEvent;
 import gg.archipelago.APClient.events.ConnectionResultEvent;
@@ -38,7 +40,7 @@ public class APClient extends gg.archipelago.APClient.APClient {
         apClient = new APClient("", 0);
         apClient.setPassword(password);
         apClient.setName(slotName);
-        apClient.setItemsHandlingFlags(0b111);
+        apClient.setItemsHandlingFlags(ItemFlags.SEND_ITEMS + ItemFlags.SEND_OWN_ITEMS + ItemFlags.SEND_STARTING_INVENTORY);
         try {
             apClient.connect(address);
         } catch (URISyntaxException e) {
@@ -87,23 +89,29 @@ public class APClient extends gg.archipelago.APClient.APClient {
         try {
             SlotData data = connectionResultEvent.getSlotData(SlotData.class);
             logger.info("slot data parsed");
-            AbstractPlayer.PlayerClass character;
+
+            AbstractPlayer character = CardCrawlGame.characterManager.getCharacter(AbstractPlayer.PlayerClass.IRONCLAD);
             switch(data.character) {
-                case 1:
-                    character = AbstractPlayer.PlayerClass.THE_SILENT;
+                case "1":
+                    data.character = "The Silent";
                     break;
-                case 2:
-                    character = AbstractPlayer.PlayerClass.DEFECT;
+                case "2":
+                    data.character = "The Defect";
                     break;
-                case 3:
-                    character = AbstractPlayer.PlayerClass.WATCHER;
+                case "3":
+                    data.character = "The Watcher";
                     break;
-                case 0:
-                default:
-                    character = AbstractPlayer.PlayerClass.IRONCLAD;
+                case "4":
+                    character = CardCrawlGame.characterManager.getRandomCharacter(new Random());
             }
 
-            logger.info("character: "+character.name());
+            for (AbstractPlayer ch : CardCrawlGame.characterManager.getAllCharacters()) {
+                if( ch.title.equalsIgnoreCase(data.character)) {
+                    character = ch;
+                    break;
+                }
+            }
+            logger.info("character: "+character.name);
             logger.info("heart: "+data.heartRun);
             logger.info("seed: "+data.seed);
             logger.info("ascension: "+data.ascension);
@@ -120,7 +128,7 @@ public class APClient extends gg.archipelago.APClient.APClient {
                 }
             }*/
 
-            CardCrawlGame.chosenCharacter = character;
+            CardCrawlGame.chosenCharacter = character.chosenClass;
             CardCrawlGame.mainMenuScreen.isFadingOut = true;
             CardCrawlGame.mainMenuScreen.fadeOutMusic();
 
