@@ -1,5 +1,6 @@
 package ArchipelagoMW;
 
+import ArchipelagoMW.patches.NeowPatch;
 import ArchipelagoMW.ui.RewardMenu.ArchipelagoRewardScreen;
 import ArchipelagoMW.ui.connection.ConnectionPanel;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -7,9 +8,10 @@ import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.SeedHelper;
-import com.megacrit.cardcrawl.random.Random;
+import com.megacrit.cardcrawl.neow.NeowEvent;
+import com.megacrit.cardcrawl.neow.NeowRoom;
+import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import com.megacrit.cardcrawl.screens.mainMenu.MainMenuScreen;
-import gg.archipelago.APClient.ItemFlags;
 import gg.archipelago.APClient.Print.APPrint;
 import gg.archipelago.APClient.events.ConnectionAttemptEvent;
 import gg.archipelago.APClient.events.ConnectionResultEvent;
@@ -21,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class APClient extends gg.archipelago.APClient.APClient {
 
@@ -35,7 +38,7 @@ public class APClient extends gg.archipelago.APClient.APClient {
         apClient = new APClient("", 0);
         apClient.setPassword(password);
         apClient.setName(slotName);
-        apClient.setItemsHandlingFlags(ItemFlags.SEND_ITEMS + ItemFlags.SEND_OWN_ITEMS + ItemFlags.SEND_STARTING_INVENTORY);
+        apClient.setItemsHandlingFlags(0b111);
         try {
             apClient.connect(address);
         } catch (URISyntaxException e) {
@@ -84,29 +87,23 @@ public class APClient extends gg.archipelago.APClient.APClient {
         try {
             SlotData data = connectionResultEvent.getSlotData(SlotData.class);
             logger.info("slot data parsed");
-
-            AbstractPlayer character = CardCrawlGame.characterManager.getCharacter(AbstractPlayer.PlayerClass.IRONCLAD);
+            AbstractPlayer.PlayerClass character;
             switch(data.character) {
-                case "1":
-                    data.character = "The Silent";
+                case 1:
+                    character = AbstractPlayer.PlayerClass.THE_SILENT;
                     break;
-                case "2":
-                    data.character = "The Defect";
+                case 2:
+                    character = AbstractPlayer.PlayerClass.DEFECT;
                     break;
-                case "3":
-                    data.character = "The Watcher";
+                case 3:
+                    character = AbstractPlayer.PlayerClass.WATCHER;
                     break;
-                case "4":
-                    character = CardCrawlGame.characterManager.getRandomCharacter(new Random());
+                case 0:
+                default:
+                    character = AbstractPlayer.PlayerClass.IRONCLAD;
             }
 
-            for (AbstractPlayer ch : CardCrawlGame.characterManager.getAllCharacters()) {
-                if( ch.title.equalsIgnoreCase(data.character)) {
-                    character = ch;
-                    break;
-                }
-            }
-            logger.info("character: "+character.name);
+            logger.info("character: "+character.name());
             logger.info("heart: "+data.heartRun);
             logger.info("seed: "+data.seed);
             logger.info("ascension: "+data.ascension);
@@ -123,7 +120,7 @@ public class APClient extends gg.archipelago.APClient.APClient {
                 }
             }*/
 
-            CardCrawlGame.chosenCharacter = character.chosenClass;
+            CardCrawlGame.chosenCharacter = character;
             CardCrawlGame.mainMenuScreen.isFadingOut = true;
             CardCrawlGame.mainMenuScreen.fadeOutMusic();
 
@@ -144,6 +141,19 @@ public class APClient extends gg.archipelago.APClient.APClient {
 
             LocationTracker.scoutFirstLocations();
 
+            Set<Long> checkedLocations = getLocationManager().getCheckedLocations();
+            NeowPatch.act2portalAvailable = false;
+            NeowPatch.act3portalAvailable = false;
+            if(checkedLocations.contains(22001L)){
+                NeowPatch.act2portalAvailable = true;
+            }
+            if(checkedLocations.contains(22002L)){
+                NeowPatch.act3portalAvailable = true;
+            }
+
+            for (Long checkedLocation : checkedLocations) {
+                logger.info("checkedLocation found: " + checkedLocation);
+            }
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -186,15 +196,19 @@ public class APClient extends gg.archipelago.APClient.APClient {
         //ignore received items that happen while we are not yet loaded
         logger.info("NetworkItem received: " + networkItem.itemName);
         ArchipelagoRewardScreen.rewardsQueued +=1 ;
-        if (AbstractDungeon.isPlayerInDungeon()) {
+        if (CardCrawlGame.isInARun()) {
+            AbstractRoom room;
             try {
-                logger.info("Player is in dungeon! Adding it! He is in room: " + AbstractDungeon.getCurrRoom());
+                room =  AbstractDungeon.getCurrRoom();
+                logger.info("Player is in dungeon! Adding it! He is in room: " + room);
                 ArchipelagoRewardScreen.addReward(networkItem);
             }
             catch (NullPointerException e) {
                 logger.info("Player is not in the dungeon yet? GetCurrRoom Failed. Most likely on second and further runs");
             }
-
+        }
+        else{
+            logger.info("Player is not playing right now!");
         }
     }
 
