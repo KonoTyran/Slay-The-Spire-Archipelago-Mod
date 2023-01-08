@@ -37,12 +37,10 @@ public class NeowPatch {
                 boolean portalEngaged = false;
                 switch (buttonPressed) {
                     case 0:
-                        logger.info("Portal to act 3 engaged!");
                         BaseMod.console.setText("act TheBeyond");
                         portalEngaged = true;
                         break;
                     case 1:
-                        logger.info("Portal to act 2 engaged!");
                         BaseMod.console.setText("act TheCity");
                         portalEngaged = true;
                         break;
@@ -59,7 +57,6 @@ public class NeowPatch {
         }
         @SpirePostfixPatch
         public static void Postfix(NeowEvent __instance, int buttonPressed, int ___screenNum) {
-            logger.info("Button Pressed: " + buttonPressed + ", screen number was: " + ___screenNum);
             boolean finished = CustomFields.finished.get(__instance);
             if(finished){
                 return;

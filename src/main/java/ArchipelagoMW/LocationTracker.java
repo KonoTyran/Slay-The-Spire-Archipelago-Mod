@@ -18,9 +18,7 @@ public class LocationTracker {
 
     private static ArrayList<Long> rareCardLocations;
 
-    private static ArrayList<Long> bossRelicLocationsAct1;
-    private static ArrayList<Long> bossRelicLocationsAct2;
-    private static ArrayList<Long> bossRelicLocationsAct3;
+    private static ArrayList<Long> bossRelicLocations;
 
     public static boolean cardDraw;
 
@@ -64,13 +62,9 @@ public class LocationTracker {
             add(21003L);
         }};
 
-        bossRelicLocationsAct1 = new ArrayList<Long>() {{
+        bossRelicLocations = new ArrayList<Long>() {{
             add(22001L);
-        }};
-        bossRelicLocationsAct2 = new ArrayList<Long>() {{
             add(22002L);
-        }};
-        bossRelicLocationsAct3 = new ArrayList<Long>() {{
             add(22003L);
         }};
     }
@@ -101,8 +95,6 @@ public class LocationTracker {
             long locationID = cardDrawLocations.remove(0);
             APClient.apClient.checkLocation(locationID);
             NetworkItem item = scoutedLocations.get(locationID);
-            if(!cardDrawLocations.isEmpty())
-                APClient.apClient.scoutLocations(new ArrayList<Long>() {{add(cardDrawLocations.get(0));}});
             if(item == null)
                 return "Card Draw "+ (15 - cardDrawLocations.size());
             return item.itemName + " [] NL " + item.playerName + " [] NL Card Draw";
@@ -120,8 +112,6 @@ public class LocationTracker {
         long locationID = relicLocations.remove(0);
         APClient.apClient.checkLocation(locationID);
         NetworkItem item = scoutedLocations.get(locationID);
-        if(!relicLocations.isEmpty())
-            APClient.apClient.scoutLocations(new ArrayList<Long>() {{add(relicLocations.get(0));}});
         if(item == null)
             return "Relic " + (10 - relicLocations.size());
         return item.itemName + " [] NL " + item.playerName + " [] NL Relic";
@@ -131,29 +121,20 @@ public class LocationTracker {
      * sends the next boss relic location to AP
      */
     static public String sendBossRelic(int act) {
-        ArrayList<Long> bossRelicLocations;
-        logger.info("going to send boss relic from act " + act);
-        switch (act){
-            case 1:
-                bossRelicLocations = bossRelicLocationsAct1;
-                break;
-            case 2:
-                bossRelicLocations = bossRelicLocationsAct2;
-                break;
-            case 3:
-            default:
-                bossRelicLocations = bossRelicLocationsAct3;
-                break;
+        logger.info("Going to send relic from act " + act);
+        long locationID;
+        try{
+            locationID = bossRelicLocations.get(act - 1);
         }
-        if(bossRelicLocations.isEmpty())
+        catch(IndexOutOfBoundsException e){
+            logger.info("Index out of bounds! Tried to access bossRelicLocation position " + (act-1));
+            logger.info("while the length is " + bossRelicLocations.size());
             return "";
-        long locationID = bossRelicLocations.remove(0);
+        }
         APClient.apClient.checkLocation(locationID);
         NetworkItem item = scoutedLocations.get(locationID);
-        if(!bossRelicLocations.isEmpty())
-            APClient.apClient.scoutLocations(new ArrayList<Long>() {{add(bossRelicLocations.get(0));}});
         if(item == null)
-            return "Boss Relic " + (3 - bossRelicLocations.size());
+            return "Boss Relic " + act;
         return item.itemName + " [] NL " + item.playerName + " [] NL Boss Relic";
     }
 
@@ -168,25 +149,17 @@ public class LocationTracker {
         for (long location : relicLocations) {
             ap.checkLocation(location);
         }
-        for (long location : bossRelicLocationsAct1) {
-            ap.checkLocation(location);
-        }
-        for (long location : bossRelicLocationsAct2) {
-            ap.checkLocation(location);
-        }
-        for (long location : bossRelicLocationsAct3) {
+        for (long location : bossRelicLocations) {
             ap.checkLocation(location);
         }
     }
 
-    public static void scoutFirstLocations() {
+    public static void scoutAllLocations() {
         ArrayList<Long> locations = new ArrayList<Long>() {{
-            add(cardDrawLocations.get(0));
-            add(relicLocations.get(0));
-            add(rareCardLocations.get(0));
-            add(bossRelicLocationsAct1.get(0));
-            add(bossRelicLocationsAct2.get(0));
-            add(bossRelicLocationsAct3.get(0));
+            addAll(cardDrawLocations);
+            addAll(relicLocations);
+            addAll(rareCardLocations);
+            addAll(bossRelicLocations);
         }};
         APClient.apClient.scoutLocations(locations);
     }

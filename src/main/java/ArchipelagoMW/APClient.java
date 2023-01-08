@@ -147,21 +147,11 @@ public class APClient extends gg.archipelago.APClient.APClient {
             ArchipelagoRewardScreen.rewards.clear();
             ArchipelagoRewardScreen.index = 0;
 
-            LocationTracker.scoutFirstLocations();
+            LocationTracker.scoutAllLocations();
 
             Set<Long> checkedLocations = getLocationManager().getCheckedLocations();
-            NeowPatch.act2portalAvailable = false;
-            NeowPatch.act3portalAvailable = false;
-            if(checkedLocations.contains(22001L)){
-                NeowPatch.act2portalAvailable = true;
-            }
-            if(checkedLocations.contains(22002L)){
-                NeowPatch.act3portalAvailable = true;
-            }
-
-            for (Long checkedLocation : checkedLocations) {
-                logger.info("checkedLocation found: " + checkedLocation);
-            }
+            NeowPatch.act2portalAvailable = checkedLocations.contains(22001L);
+            NeowPatch.act3portalAvailable = checkedLocations.contains(22002L);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -206,15 +196,12 @@ public class APClient extends gg.archipelago.APClient.APClient {
         ArchipelagoRewardScreen.rewardsQueued +=1 ;
         if (CardCrawlGame.isInARun()) {
             try {
-                logger.info("Player is in dungeon! Adding it! He is in room: " + AbstractDungeon.getCurrRoom());
+                logger.info("Adding item to player in room: " + AbstractDungeon.getCurrRoom());
                 ArchipelagoRewardScreen.addReward(networkItem);
             }
             catch (NullPointerException e) {
-                logger.info("Player is not in the dungeon yet? GetCurrRoom Failed. Most likely on second and further runs");
+                logger.info("Player was unable to receive item for now");
             }
-        }
-        else{
-            logger.info("Player is not playing right now!");
         }
     }
 
