@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 public class LocationTracker {
     public static final Logger logger = LogManager.getLogger(LocationTracker.class.getName());
@@ -19,10 +20,22 @@ public class LocationTracker {
     private static ArrayList<Long> rareCardLocations;
 
     private static ArrayList<Long> bossRelicLocations;
+    private static int cardDrawLocationCounter = 0;
+    private static int cardDrawLocationCheckPointAct2 = 5;
+    private static int cardDrawLocationCheckPointAct3 = 10;
+    private static int relicLocationCounter = 0;
+    private static int relicLocationCheckPointAct2 = 3;
+    private static int relicLocationCheckPointAct3 = 6;
+    public static Set<Long> checkedLocations;
 
     public static boolean cardDraw;
 
     public static HashMap<Long, NetworkItem> scoutedLocations = new HashMap<>();
+
+    public static portalType chosenPortalType = portalType.portalsWithCheckpoints;
+    public enum portalType{
+        noPortals, portalsWithCheckpoints
+    }
 
     public static void reset() {
         cardDrawLocations = new ArrayList<Long>() {{
@@ -67,61 +80,127 @@ public class LocationTracker {
             add(22002L);
             add(22003L);
         }};
+        cardDrawLocationCounter = 0;
+        relicLocationCounter = 0;
+        cardDraw = true;
+
+    }
+    public static void SetLocationCounters(int incomingAct){
+        cardDrawLocationCounter = 0;
+        int cardDrawLocationCheckpoint = 0;
+        int relicLocationCheckpoint = 0;
+        switch(incomingAct){
+            case 2:
+                cardDrawLocationCheckpoint = cardDrawLocationCheckPointAct2;
+                relicLocationCheckpoint = relicLocationCheckPointAct2;
+                break;
+            case 3:
+                cardDrawLocationCheckpoint = cardDrawLocationCheckPointAct3;
+                relicLocationCheckpoint = relicLocationCheckPointAct3;
+                break;
+            default:
+                break;
+        }
+        for (Long location: cardDrawLocations) {
+            if(checkedLocations.contains(location) && cardDrawLocationCounter < cardDrawLocationCheckpoint){
+                cardDrawLocationCounter += 1;
+            }
+            else{
+                break;
+            }
+        }
+        for (Long location: relicLocations) {
+            if(checkedLocations.contains(location) && relicLocationCounter < relicLocationCheckpoint){
+                relicLocationCounter += 1;
+            }
+            else{
+                break;
+            }
+        }
+
     }
 
     /**
      * @return true if this card draw was sent to AP,
      * false if you should keep this card draw locally.
      */
-    static public String sendCardDraw(RewardItem reward) {
+    public static String sendCardDraw(RewardItem reward, int act) {
         try {
             Field isBoss = RewardItem.class.getDeclaredField("isBoss");
             isBoss.setAccessible(true);
             if ((boolean) isBoss.get(reward)) {
-                if (rareCardLocations.isEmpty())
-                    return "";
-                long locationID = rareCardLocations.remove(0);
-                APClient.apClient.checkLocation(locationID);
-                NetworkItem item = scoutedLocations.get(locationID);
-                if (item == null)
-                    return "Rare Card Draw " + (3 - rareCardLocations.size());
-                return item.itemName + " [] NL " + item.playerName + " [] NL Rare Card Draw";
+                return (sendRareCardDraw(reward, act));
             }
+
         } catch (NoSuchFieldException | IllegalAccessException ignored) {
         }
         cardDraw = !cardDraw;
         if (cardDraw) {
-            if (cardDrawLocations.isEmpty())
+            long locationID;
+            if(cardDrawLocationCounter>=cardDrawLocations.size()) {return "";}
+            try {
+                locationID = cardDrawLocations.get(cardDrawLocationCounter);
+            }
+            catch(IndexOutOfBoundsException e) {
+                logger.info("Index out of bounds! Tried to access cardLocation position " + cardDrawLocationCounter);
+                logger.info("while the length is " + cardDrawLocations.size());
                 return "";
-            long locationID = cardDrawLocations.remove(0);
+            }
             APClient.apClient.checkLocation(locationID);
             NetworkItem item = scoutedLocations.get(locationID);
+            cardDrawLocationCounter += 1;
+            logger.info("Sending card draw location " + cardDrawLocationCounter);
             if (item == null)
-                return "Card Draw " + (15 - cardDrawLocations.size());
-            return item.itemName + " [] NL " + item.playerName + " [] NL Card Draw";
+                return "Card Draw " + cardDrawLocationCounter;
+            return item.itemName + " [] NL " + item.playerName + " [] NL Card Draw " + cardDrawLocationCounter;
         }
         return "";
+    }
+    public static String sendRareCardDraw(RewardItem reward, int act) {
+        long locationID;
+        try {
+            locationID = rareCardLocations.get(act - 1);
+        }
+        catch(IndexOutOfBoundsException e) {
+            logger.info("Index out of bounds! Tried to access rareCardLocation position " + (act - 1));
+            logger.info("while the length is " + rareCardLocations.size());
+            return "";
+        }
+        APClient.apClient.checkLocation(locationID);
+        NetworkItem item = scoutedLocations.get(locationID);
+        logger.info("Sending rare card draw location " + (act - 1));
+        if (item == null)
+            return "Rare Card Draw " + act;
+        return item.itemName + " [] NL " + item.playerName + " [] NL Rare Card Draw " + (act - 1);
     }
 
     /**
      * sends the next relic location to AP
      */
-    static public String sendRelic() {
-        if (relicLocations.isEmpty())
+    public static String sendRelic(int act) {
+        long locationID;
+        if(relicLocationCounter>=relicLocations.size()) {return "";}
+        try {
+            locationID = relicLocations.get(relicLocationCounter);
+        }
+        catch(IndexOutOfBoundsException e) {
+            logger.info("Index out of bounds! Tried to access relicLocation position " + relicLocationCounter);
+            logger.info("while the length is " + relicLocations.size());
             return "";
-
-        long locationID = relicLocations.remove(0);
+        }
         APClient.apClient.checkLocation(locationID);
         NetworkItem item = scoutedLocations.get(locationID);
+        relicLocationCounter += 1;
+        logger.info("Sending relic location " + relicLocationCounter);
         if (item == null)
-            return "Relic " + (10 - relicLocations.size());
-        return item.itemName + " [] NL " + item.playerName + " [] NL Relic";
+            return "Relic " + relicLocationCounter;
+        return item.itemName + " [] NL " + item.playerName + " [] NL Relic " + relicLocationCounter;
     }
 
     /**
      * sends the next boss relic location to AP
      */
-    static public String sendBossRelic(int act) {
+    public static String sendBossRelic(int act) {
         logger.info("Going to send relic from act " + act);
         long locationID;
         try {
@@ -133,9 +212,10 @@ public class LocationTracker {
         }
         APClient.apClient.checkLocation(locationID);
         NetworkItem item = scoutedLocations.get(locationID);
+        logger.info("Sending Boss Relic location " + (act - 1));
         if (item == null)
             return "Boss Relic " + act;
-        return item.itemName + " [] NL " + item.playerName + " [] NL Boss Relic";
+        return item.itemName + " [] NL " + item.playerName + " [] NL Boss Relic " + (act - 1);
     }
 
     public static void forfeit() {

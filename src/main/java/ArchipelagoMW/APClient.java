@@ -141,6 +141,7 @@ public class APClient extends gg.archipelago.APClient.APClient {
             logger.info("heart: " + data.finalAct);
             logger.info("seed: " + data.seed);
             logger.info("ascension: " + data.ascension);
+            logger.info("portals: " + data.portals);
             /*
             AbstractDungeon.player = CardCrawlGame.characterManager.recreateCharacter(character);
             for (AbstractRelic relic : AbstractDungeon.player.relics) {
@@ -179,8 +180,26 @@ public class APClient extends gg.archipelago.APClient.APClient {
             LocationTracker.scoutAllLocations();
 
             Set<Long> checkedLocations = getLocationManager().getCheckedLocations();
+            LocationTracker.checkedLocations = checkedLocations;
             NeowPatch.act2portalAvailable = checkedLocations.contains(22001L);
             NeowPatch.act3portalAvailable = checkedLocations.contains(22002L);
+
+            switch(data.portals){
+                case 0:
+                    LocationTracker.chosenPortalType = LocationTracker.portalType.noPortals;
+                    break;
+                case 1:
+                default:
+                    LocationTracker.chosenPortalType = LocationTracker.portalType.portalsWithCheckpoints;
+                    break;
+            }
+            if(data.portals>0){
+                NeowPatch.portals=true;
+            }
+            else{
+                NeowPatch.portals=false;
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

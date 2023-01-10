@@ -1,5 +1,6 @@
 package ArchipelagoMW.patches;
 
+import ArchipelagoMW.LocationTracker;
 import basemod.BaseMod;
 import basemod.DevConsole;
 import com.evacipated.cardcrawl.modthespire.lib.*;
@@ -13,6 +14,7 @@ public class NeowPatch {
     public static final Logger logger = LogManager.getLogger(NeowPatch.class.getName());
     public static boolean act2portalAvailable = false;
     public static boolean act3portalAvailable = false;
+    public static boolean portals = true;
 
     public NeowPatch() {
     }
@@ -27,19 +29,26 @@ public class NeowPatch {
 
         @SpirePrefixPatch
         public static SpireReturn<Void> Prefix(NeowEvent __instance, int buttonPressed, int ___screenNum) {
+            if(!portals){
+                return SpireReturn.Continue();
+            }
             if (___screenNum == 99) {
                 boolean portalEngaged = false;
+                int incomingAct = 1;
                 switch (buttonPressed) {
                     case 0:
                         BaseMod.console.setText("act TheBeyond");
                         portalEngaged = true;
+                        incomingAct = 3;
                         break;
                     case 1:
                         BaseMod.console.setText("act TheCity");
                         portalEngaged = true;
+                        incomingAct = 2;
                         break;
                 }
                 if (portalEngaged) {
+                    LocationTracker.SetLocationCounters(incomingAct);
                     CustomFields.finished.set(__instance, true);
                     __instance.roomEventText.clear();
                     CardCrawlGame.music.fadeOutBGM();
@@ -53,7 +62,7 @@ public class NeowPatch {
         @SpirePostfixPatch
         public static void Postfix(NeowEvent __instance, int buttonPressed, int ___screenNum) {
             boolean finished = CustomFields.finished.get(__instance);
-            if (finished) {
+            if (finished || !portals) {
                 return;
             }
             if (___screenNum == 99) {

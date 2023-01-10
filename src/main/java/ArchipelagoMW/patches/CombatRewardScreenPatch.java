@@ -3,6 +3,7 @@ package ArchipelagoMW.patches;
 import ArchipelagoMW.LocationTracker;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInsertPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
+import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.screens.CombatRewardScreen;
 
@@ -23,10 +24,10 @@ public class CombatRewardScreenPatch {
                 String locationName = "";
                 switch (reward.type) {
                     case CARD:
-                        locationName = LocationTracker.sendCardDraw(reward);
+                        locationName = LocationTracker.sendCardDraw(reward, AbstractDungeon.actNum);
                         break;
                     case RELIC:
-                        locationName = LocationTracker.sendRelic();
+                        locationName = LocationTracker.sendRelic(AbstractDungeon.actNum);
                         break;
                 }
 

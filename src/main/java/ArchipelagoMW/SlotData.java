@@ -21,4 +21,7 @@ public class SlotData {
 
     @SerializedName("downfall")
     public int downfall = 0;
+
+    @SerializedName("portals")
+    public int portals = 1;
 }
